@@ -4,16 +4,18 @@
 	addi $a1, $0, 7 # b
 	addi $a2, $0, 2 # c
 wackySum: # caller
+	add $s0, $0, $0 # set sum to 0
 	add $s1, $a0, $0 # set i to a
 	add $v0, $0, $0
 	
-	addi $sp, $sp, -12 # decrement stack pointer
+	addi $sp, $sp, -16 # decrement stack pointer
+	sw $s0, 12($sp) # store sum on the stack
 	sw $s1, 8($sp) # store i on the stack
 	sw $a1, 4($sp) # store b on the stack
 	sw $a2, 0($sp) # store c on the stack
 	j loop
 	jr $ra
-loop: # callee & caller
+loop: # callee & caller 
 	lw $t0, 8($sp) # load i from stack
 	lw $t1, 4($sp) # load b from stack
 	bgt $t0, $t1, return # terminating condition
@@ -42,6 +44,11 @@ loop: # callee & caller
 	add $t2, $t0, $t1 # i += c
 	
 	sw $t2, 8($sp) # store i on stack
+	
+	lw $t3, 12($sp) # load sum from stack
+	add $t3, $v0, $t3 # add return value of combineFour to current sum
+	sw $t3, 12($sp) # save current sum on stack
+	
 	j loop
 	jr $ra
 combineFour: # callee & caller
@@ -56,12 +63,14 @@ combineFour: # callee & caller
 	mfhi $t1 # sum % 2
 	
 	beq $t1, 1, odd_sum # check if sum is odd
-	add $v0, $v0, $t0 # if sum is even, simply add to current sum
+	add $v0, $0, $t0 # if sum is even, return sum
 	jr $ra
 odd_sum: # callee
 	sra $a0, $a0, 1 # divide sum by 2
-	add $v0, $v0, $a0 # if sum is odd, add sum/2 to current sum
+	add $v0, $0, $a0 # if sum is odd, return sum/2
 	jr $ra
-return:
+return: # callee
+	lw $t0, 12($sp) # load final sum from stack
+	add $v0, $0, $t0 # return final sum
 	addi $sp, $sp, 16 # reincrement stack pointer
 	jr $ra
