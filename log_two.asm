@@ -1,8 +1,9 @@
+# Joshua Vink and Skyler Burden
 .globl log_two
 .text
 	addi $a0, $0, -5 # x
 	
-	blt $a0, 0, negative
+	ble $a0, 0, negative
 log_two:
 	ble $a0, 1, finish
 	addi $sp, $sp, -8
